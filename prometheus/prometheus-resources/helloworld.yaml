@@ -1,0 +1,25 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: helloworld-deployment
+spec: 
+  replicas: 2
+  template:
+    metadata:
+      labels:
+          app: helloworld
+    spec:
+      containers:
+        - name: k8s-demo
+          image: hemil/bestubu:8.0
+          resources:
+            requests:
+              cpu: 100m
+              memory: 200Mi
+            limits:
+              cpu: 200m
+              memory: 400Mi
+          ports:
+          - name: demo-port
+            containerPort: 80
+

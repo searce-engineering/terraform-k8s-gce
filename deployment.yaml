@@ -1,0 +1,69 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: cluster-autoscaler
+  namespace: kube-system
+  labels:
+    k8s-addon: cluster-autoscaler.addons.k8s.io
+    app: cluster-autoscaler
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: cluster-autoscaler
+  template:
+    metadata:
+      labels:
+        k8s-addon: cluster-autoscaler.addons.k8s.io
+        app: cluster-autoscaler
+      annotations:
+         # For 1.6, we keep the old tolerations in case of a downgrade to 1.5
+        scheduler.alpha.kubernetes.io/tolerations: '[{"key":"dedicated", "value":"master"}]'
+        prometheus.io/scrape: 'true'
+        prometheus.io/port: '8085'
+    spec:
+      tolerations:
+      - effect: NoSchedule
+        key: node-role.kubernetes.io/master
+      nodeSelector:
+        kubernetes.io/role: master
+      serviceAccountName: cluster-autoscaler
+      containers:
+        - name: cluster-autoscaler
+          image: k8s.gcr.io/cluster-autoscaler:v1.3.0
+          livenessProbe:
+            httpGet:
+              path: /health-check
+              port: 8085
+          readinessProbe:
+            httpGet:
+              path: /health-check
+              port: 8085
+          resources:
+            limits:
+              cpu: 100m
+              memory: 300Mi
+            requests:
+              cpu: 100m
+              memory: 300Mi
+          command:
+            - ./cluster-autoscaler
+            - --v=4
+            - --stderrthreshold=info
+            - --cloud-provider=gce
+            - --skip-nodes-with-local-storage=false
+            - --scale-down-delay-after-add=2m
+            - --scale-down-unneeded-time=5m
+            ${ig_names}
+          env:
+            - name: AWS_REGION
+              value:              ### Need to check this ###
+          volumeMounts:
+            - name: ssl-certs
+              mountPath: /etc/ssl/certs/ca-certificates.crt
+              readOnly: true
+      volumes:
+        - name: ssl-certs
+          hostPath:
+            path: /etc/ssl/certs/ca-certificates.crt
+      dnsPolicy: "Default"
