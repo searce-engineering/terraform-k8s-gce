@@ -95,7 +95,7 @@ module "gcp-worker-core" {
   zone                   = "${var.zone}"
   disk_size_gb           = "30"
   machine_type           = "n1-standard-4"
-  node_labels            = ["kubernetes.io/role=core", "onepanel.io/machine-type=cpu"]
+  node_labels            = ["kubernetes.io/role=core"]
   access_config          = []
   k8s_version            = "${var.k8s_version}"
   add_tags               = ["nat-${var.cluster_name}-${var.zone}"]
@@ -123,7 +123,7 @@ module "gcp-worker-gpu" {
   machine_type           = "n1-standard-4"
   gpu_type               = "nvidia-tesla-k80"
   gpu_count              = "1"
-  node_labels            = ["kubernetes.io/role=node", "onepanel.io/machine-type=gpu"]
+  node_labels            = ["kubernetes.io/role=node"]
   access_config          = []
   k8s_version            = "${var.k8s_version}"
   add_tags               = ["nat-${var.cluster_name}-${var.zone}"]
